@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-// var jwt = require("jsonwebtoken");
+var jwt = require("jsonwebtoken");
 require("dotenv").config();
 const stripe = require("stripe")(
   "sk_test_51NHNrxFZFG6tQRNii6PO7ei5HfJc754mAQkaXKFuTCxLQ1MjAvQ88lkM3McTAz54XcgtHuU6zl67sxFJf5Dc4fdD00SO8bNYiN"
@@ -12,13 +12,15 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-console.log(process.env.SUMMER_CAMPING_USER);
+console.log(process.env.ACCESS_TOKEN);
+
 console.log(process.env.SUMMER_CAMPING_PASS);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.SUMMER_CAMPING_USER}:${process.env.SUMMER_CAMPING_PASS}@cluster0.wauv4p9.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -39,6 +41,16 @@ async function run() {
     const paymentCollection = client.db("yugaDB").collection("payment");
 
     const selectedCollection = client.db("yugaDB").collection("selectedClass");
+
+    //  jwt.verify here
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "1h",
+      });
+      res.send({ token });
+    });
 
     //   clesses Apis here
 
@@ -119,21 +131,26 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/user/admin/:email", async (req, res) => {
+    app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
 
-      if (req.decoded.email !== email) {
-        res.send({ admin: false });
-      }
       const query = { email: email };
       const user = await userCollection.findOne(query);
       const result = { admin: user?.role === "admin" };
       res.send(result);
     });
 
+    app.get("/users/instructors/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const result = { instructor: user?.role === "instructor" };
+      res.send(result);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
-
       console.log(user);
 
       const query = { email: user.email };
@@ -144,6 +161,20 @@ async function run() {
       }
 
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const { role } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
