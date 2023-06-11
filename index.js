@@ -155,6 +155,14 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/selectedClass/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await selectedCollection.deleteOne(query);
+      res.send(result);
+    });
+
     //     app.post('/payment', async (req, res) => {
     //   const
     // })
@@ -178,6 +186,13 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    app.get("/payment/:gmail", async (req, res) => {
+      const email = req.params.gmail;
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
     });
 
     app.post("/payment", async (req, res) => {
