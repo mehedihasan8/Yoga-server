@@ -166,7 +166,7 @@ async function run() {
 
       const amount = parseInt(price * 100);
 
-      console.log(amount, typeof amount);
+      // console.log(amount, typeof amount);
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -174,7 +174,7 @@ async function run() {
         payment_method_types: ["card"],
       });
 
-      console.log(paymentIntent);
+      // console.log(paymentIntent);
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
@@ -182,6 +182,27 @@ async function run() {
 
     app.post("/payment", async (req, res) => {
       const payment = req.body;
+
+      const oldId = payment.classId;
+
+      console.log(payment, "it old classes", oldId);
+
+      const query = { _id: new ObjectId(oldId) };
+
+      try {
+        const oldeClesses = await clessesCollection.find(query).toArray();
+        console.log("olde clesses found here:", oldeClesses[0]);
+        const update = await clessesCollection.updateOne(oldeClesses[0], {
+          $inc: { availableSeats: -1, totalEnrolled: 1 }, // Increment both fields by 1
+        });
+
+        // res.send(update);
+      } catch (error) {
+        console.error("Error finding olde clesses:", error);
+      }
+
+      // console.log("olde clesses find here ", oldeClesses);
+
       const result = await paymentCollection.insertOne(payment);
       res.send(result);
     });
