@@ -28,7 +28,7 @@ const verifyJWT = (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
-  jwt.verify(token, process.env.User_Access_Token, function (err, decoded) {
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
     if (err) {
       return res
         .status(401)
@@ -71,6 +71,33 @@ async function run() {
     const paymentCollection = client.db("yugaDB").collection("payment");
 
     const selectedCollection = client.db("yugaDB").collection("selectedClass");
+
+    // verify admin ---------------------------
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden message" });
+      }
+      next();
+    };
+
+    // verify instructor ---------------------------
+
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "instructor") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden message" });
+      }
+      next();
+    };
 
     //  jwt.verify here
 
@@ -156,7 +183,7 @@ async function run() {
 
     //   All user Apis here
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
