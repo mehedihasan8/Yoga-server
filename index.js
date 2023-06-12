@@ -36,9 +36,9 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-console.log(process.env.ACCESS_TOKEN);
+// console.log(process.env.ACCESS_TOKEN);
 
-console.log(process.env.SUMMER_CAMPING_PASS);
+// console.log(process.env.SUMMER_CAMPING_PASS);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.SUMMER_CAMPING_USER}:${process.env.SUMMER_CAMPING_PASS}@cluster0.wauv4p9.mongodb.net/?retryWrites=true&w=majority`;
@@ -116,7 +116,7 @@ async function run() {
       const result = await clessesCollection
         .find()
         .sort({
-          availableSeats: -1,
+          totalEnrolled: -1,
         })
         .limit(6)
         .toArray();
@@ -183,17 +183,36 @@ async function run() {
 
     //   instractor  Apis here
 
+    app.get("/instractorall", async (req, res) => {
+      const filter = { role: "instructor" };
+      const result = await userCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     app.get("/instractor", async (req, res) => {
-      const result = await instractorCollection.find().toArray();
+      const filete = { role: "instructor" };
+      const result = await userCollection.find(filete).limit(6).toArray();
+      // console.log(result);
       res.send(result);
     });
 
     //   All user Apis here
 
-    app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
+
+    // app.get("/populerclasses", async (req, res) => {
+    //   const result = await clessesCollection
+    //     .find()
+    //     .sort({
+    //       totalEnrolled: -1,
+    //     })
+    //     .limit(6)
+    //     .toArray();
+    //   res.send(result);
+    // });
 
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
@@ -280,10 +299,33 @@ async function run() {
       });
     });
 
+    // app.get("/populerclasses", async (req, res) => {
+    //   const result = await clessesCollection
+    //     .find()
+    //     .sort({
+    //       totalEnrolled: -1,
+    //     })
+    //     .limit(6)
+    //     .toArray();
+    //   res.send(result);
+    // });
+
     app.get("/payment/:gmail", async (req, res) => {
       const email = req.params.gmail;
       const query = { email: email };
       const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/paymenthistory/:gmail", async (req, res) => {
+      const email = req.params.gmail;
+      const query = { email: email };
+      const result = await paymentCollection
+        .find(query)
+        .sort({
+          date: -1,
+        })
+        .toArray();
       res.send(result);
     });
 
