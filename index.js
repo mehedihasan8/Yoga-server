@@ -36,10 +36,6 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-// console.log(process.env.ACCESS_TOKEN);
-
-// console.log(process.env.SUMMER_CAMPING_PASS);
-
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.SUMMER_CAMPING_USER}:${process.env.SUMMER_CAMPING_PASS}@cluster0.wauv4p9.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -58,7 +54,6 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const userCollection = client.db("yugaDB").collection("users");
-    const instractorCollection = client.db("yugaDB").collection("instractor");
 
     const clessesCollection = client.db("yugaDB").collection("Clesses");
 
