@@ -130,6 +130,21 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/addedclass/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateClass = req.body;
+      // console.log(id, updateClass);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          availableSeats: updateClass.availableSeats,
+          price: updateClass.price,
+        },
+      };
+      const result = await clessesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     app.post("/addclass", verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
       const result = await clessesCollection.insertOne(newClass);
@@ -174,13 +189,6 @@ async function run() {
       res.send(result);
     });
 
-    // app.delete("/myclases/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const result = await selectedCollection.deleteOne(query);
-    //   res.send(result);
-    // });
-
     //   instractor  Apis here
 
     app.get("/instractorall", async (req, res) => {
@@ -202,17 +210,6 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
-
-    // app.get("/populerclasses", async (req, res) => {
-    //   const result = await clessesCollection
-    //     .find()
-    //     .sort({
-    //       totalEnrolled: -1,
-    //     })
-    //     .limit(6)
-    //     .toArray();
-    //   res.send(result);
-    // });
 
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
@@ -298,17 +295,6 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
-
-    // app.get("/populerclasses", async (req, res) => {
-    //   const result = await clessesCollection
-    //     .find()
-    //     .sort({
-    //       totalEnrolled: -1,
-    //     })
-    //     .limit(6)
-    //     .toArray();
-    //   res.send(result);
-    // });
 
     app.get("/payment/:gmail", async (req, res) => {
       const email = req.params.gmail;
